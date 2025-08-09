@@ -1,66 +1,71 @@
+/* General Body Style */
 body {
+    background: linear-gradient(to right, #ffdde1, #ee9ca7);
+    font-family: 'Comic Sans MS', cursive, sans-serif;
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: #fce4ec;
-    overflow: hidden;
+    padding: 0;
 }
 
-.about-panel {
-    position: fixed;
-    top: 0;
-    left: 0;
+/* Container for Sidebar + Main Chat */
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar */
+.side-panel {
     width: 250px;
-    height: 100%;
-    background: rgba(255, 192, 203, 0.9);
+    background-color: rgba(255, 240, 245, 0.9);
+    border-right: 2px solid #ff7f7f;
     padding: 20px;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+    box-sizing: border-box;
 }
 
+.side-panel h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.side-panel h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+/* Main Chat Area */
 .main-content {
-    margin-left: 270px;
-    padding: 20px;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.main-title {
-    text-align: center;
-    color: #d81b60;
-}
-
-#chatbox {
-    height: 300px;
-    background: white;
-    border: 1px solid #ccc;
-    padding: 10px;
-    overflow-y: auto;
-}
-
-#userInput {
+.chat-container {
+    display: flex;
+    flex-direction: column;
     width: 80%;
-    padding: 8px;
+    max-width: 600px;
+}
+
+/* Input + Button */
+input[type="text"] {
+    border-radius: 8px;
+    border: 2px solid #ff7f7f;
+    padding: 10px;
+    font-size: 16px;
+    margin-top: 10px;
 }
 
 button {
-    padding: 8px;
-    background: #ec407a;
+    background-color: #ff7f7f;
     color: white;
+    border-radius: 12px;
+    font-size: 16px;
+    padding: 10px;
+    margin-top: 5px;
     border: none;
     cursor: pointer;
 }
 
-.user-msg {
-    text-align: right;
-    color: #00796b;
-}
-
-.bot-msg {
-    text-align: left;
-    color: #6a1b9a;
-}
-
-/* Petals Canvas */
-#petalsCanvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    pointer-events: none;
+button:hover {
+    background-color: #ff4f4f;
 }
