@@ -1,3 +1,6 @@
 streamlit
 wikipedia
-gTTS
+gtts
+Pillow
+requests
+sympy
