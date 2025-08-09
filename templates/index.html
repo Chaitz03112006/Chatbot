@@ -2,48 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flower Petals Chatbot</title>
+    <title>My Chatbot</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='petals.js') }}" defer></script>
 </head>
 <body>
-    <!-- Title Section -->
-    <header>
-        <h1>🌸 Flower Petals Chatbot 🌸</h1>
-    </header>
+    <!-- Background Music -->
+    <audio autoplay loop>
+        <source src="{{ url_for('static', filename='background.mp3') }}" type="audio/mpeg">
+    </audio>
 
-    <!-- Main Container -->
-    <div class="container">
-        
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <h2>About Us</h2>
-            <p>
-                Welcome to Flower Petals Chatbot — a simple and beautiful chatbot
-                where you can chat while petals gently fall in the background.
-                Created with ❤️ for a classic web experience.
-            </p>
-        </aside>
+    <!-- Petals Animation -->
+    <canvas id="petalsCanvas"></canvas>
 
-        <!-- Chat Section -->
-        <main class="chat-section">
-            <div id="chat-box" class="chat-box">
-                <p><b>Bot:</b> Hello! How can I help you today?</p>
-            </div>
-            <div class="input-container">
-                <input type="text" id="user-input" placeholder="Type your message...">
-                <button onclick="sendMessage()">Send</button>
-            </div>
-        </main>
-
+    <!-- About Us Panel -->
+    <div class="about-panel">
+        <h2>About Us</h2>
+        <p>We built this chatbot to bring conversations to life.  
+           Petals, music, and friendly AI — all in one!</p>
     </div>
 
-    <!-- Background Petals -->
-    <canvas id="petals"></canvas>
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1 class="main-title">🌸 My Chatbot 🌸</h1>
+        <div id="chatbox"></div>
+        <input type="text" id="userInput" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
 
-    <!-- JS Scripts -->
-    <script src="{{ url_for('static', filename='petals.js') }}"></script>
     <script>
         function sendMessage() {
-            let userInput = document.getElementById("user-input");
-            let chatBox =
+            const input = document.getElementById('userInput');
+            const chatbox = document.getElementById('chatbox');
+            const userMessage = input.value.trim();
+            if (!userMessage) return;
+
+            chatbox.innerHTML += `<div class='user-msg'>${userMessage}</div>`;
+            input.value = "";
+
+            // Simulated bot reply
+            setTimeout(() => {
+                chatbox.innerHTML += `<div class='bot-msg'>Hello! I’m your buddy 🤖</div>`;
+                chatbox.scrollTop = chatbox.scrollHeight;
+            }, 500);
+        }
+    </script>
+</body>
+</html>
