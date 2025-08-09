@@ -4,7 +4,22 @@ import math
 import os
 
 # ----------------- CONFIG -----------------
-st.set_page_config(page_title="🌸 Motte Chatbot", layout="centered")
+st.set_page_config(page_title="🌸 Motte Chatbot", layout="wide")
+
+# Sidebar: About Us
+st.sidebar.title("About Us")
+st.sidebar.write("""
+Welcome to **Motte Chatbot**!  
+Your friendly multi-mode assistant that can:
+- 📚 Search Wikipedia
+- 🧮 Solve Math problems
+- 🩺 Give health tips
+- ⚛️ Explain quantum physics  
+No external AI APIs — just pure Python magic!
+""")
+
+# Main Title
+st.markdown("<h1 style='text-align: center;'>🌸 Motte Chatbot 🌸</h1>", unsafe_allow_html=True)
 
 # Asset paths
 music_file = os.path.join("static", "background.mp3")
