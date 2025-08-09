@@ -1,14 +1,16 @@
 import streamlit as st
 import wikipedia
 import math
+import os
 
 # ----------------- CONFIG -----------------
 st.set_page_config(page_title="🌸 Motte Chatbot", layout="centered")
 
-# Inject background music
-music_file = "background.mp3"
-petal_image = "petal.png"
+# Asset paths
+music_file = os.path.join("static", "background.mp3")
+petal_image = os.path.join("static", "petal.png")
 
+# Inject background music
 st.markdown(
     f"""
     <audio autoplay loop>
@@ -18,7 +20,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Petal animation (CSS)
+# Petal animation
 st.markdown(
     f"""
     <style>
@@ -40,7 +42,7 @@ mode = st.radio(
     horizontal=True
 )
 
-# ----------------- GREETINGS -----------------
+# Greetings
 greetings = {
     "📚 Wikipedia": "📚 Motte Encyclopedia at your service.",
     "🧮 Mathematics": "🧮 Motte Calculator is ready for you.",
