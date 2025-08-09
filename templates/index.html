@@ -2,50 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Chatbot</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="{{ url_for('static', filename='petals.js') }}" defer></script>
 </head>
 <body>
-    <!-- Background Music -->
-    <audio autoplay loop>
-        <source src="{{ url_for('static', filename='background.mp3') }}" type="audio/mpeg">
-    </audio>
 
-    <!-- Petals Animation -->
-    <canvas id="petalsCanvas"></canvas>
+    <div class="container">
+        
+        <!-- Sidebar (About Us) -->
+        <aside class="side-panel">
+            <h1 class="site-title">🌸 My Chatbot</h1>
+            <h2>About Us</h2>
+            <p>We built this chatbot for fun and interaction!  
+               It’s styled with petals and music to make chatting more enjoyable.</p>
+        </aside>
 
-    <!-- About Us Panel -->
-    <div class="about-panel">
-        <h2>About Us</h2>
-        <p>We built this chatbot to bring conversations to life.  
-           Petals, music, and friendly AI — all in one!</p>
+        <!-- Main Chat Section -->
+        <main class="main-content">
+            <div class="chat-container">
+                <div id="chat-box"></div>
+                <input type="text" id="user-input" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </main>
+
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <h1 class="main-title">🌸 My Chatbot 🌸</h1>
-        <div id="chatbox"></div>
-        <input type="text" id="userInput" placeholder="Type your message...">
-        <button onclick="sendMessage()">Send</button>
-    </div>
-
-    <script>
-        function sendMessage() {
-            const input = document.getElementById('userInput');
-            const chatbox = document.getElementById('chatbox');
-            const userMessage = input.value.trim();
-            if (!userMessage) return;
-
-            chatbox.innerHTML += `<div class='user-msg'>${userMessage}</div>`;
-            input.value = "";
-
-            // Simulated bot reply
-            setTimeout(() => {
-                chatbox.innerHTML += `<div class='bot-msg'>Hello! I’m your buddy 🤖</div>`;
-                chatbox.scrollTop = chatbox.scrollHeight;
-            }, 500);
-        }
-    </script>
+    <script src="{{ url_for('static', filename='petals.js') }}"></script>
 </body>
 </html>
