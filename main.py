@@ -4,146 +4,148 @@ import wikipedia
 from gtts import gTTS
 import io
 import datetime
-from typing import List, Dict, Optional
+import os
+import re
+from typing import List, Dict
 
 # -------------------
-# Page config & utils
+# Page setup
 # -------------------
-st.set_page_config(page_title="Classic Chatbot", page_icon="🤖", layout="wide")
-st.title("🤖 Classic Chatbot — Wikipedia + Voice")
+st.set_page_config(page_title="Classic Real-World Chatbot", page_icon="💬", layout="centered")
+st.title("💬 Classic Real-World Chatbot")
 
-# Initialize session state
+USER_AVATAR = "🧑"
+BOT_AVATAR = "🤖"
+
+# Load persistent history
+HISTORY_FILE = "chat_history.txt"
 if "messages" not in st.session_state:
-    st.session_state.messages: List[Dict] = []  # each item: {"role": "user"/"bot", "content": str, "meta": {...}}
-
-# Helper: add message
-def add_message(role: str, content: str, meta: Optional[dict] = None):
-    if meta is None:
-        meta = {}
-    st.session_state.messages.append({"role": role, "content": content, "meta": meta})
-
-# -------------------
-# Sidebar (settings)
-# -------------------
-with st.sidebar:
-    st.header("Settings")
-    wiki_sentences = st.slider("Wikipedia summary sentences", 1, 8, 2)
-    voice_enabled = st.checkbox("Enable voice button", value=True)
-    voice_lang = st.selectbox("Voice language", ["en", "hi", "kn", "ta", "te", "ml"], index=0)
-    persona = st.selectbox("Persona", ["Friendly", "Formal", "Concise"], index=0)
-    st.markdown("---")
-    if st.button("Clear chat"):
-        st.session_state.messages = []
-        st.experimental_rerun()
-
-# -------------------
-# File upload for context
-# -------------------
-st.markdown("#### Upload contextual text (optional)")
-uploaded = st.file_uploader("Upload a .txt file to add as context (optional)", type=["txt"])
-upload_context = ""
-if uploaded:
-    try:
-        upload_context = uploaded.read().decode("utf-8")
-        st.success(f"Loaded {uploaded.name} ({len(upload_context.splitlines())} lines)")
-    except Exception:
-        st.error("Couldn't read file. Please upload plain text .txt")
+    if os.path.exists(HISTORY_FILE):
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            history_lines = f.readlines()
+        st.session_state.messages = [eval(line.strip()) for line in history_lines if line.strip()]
+    else:
+        st.session_state.messages: List[Dict] = []
 
 # -------------------
 # Core functions
 # -------------------
-def get_wikipedia_summary(query: str, sentences: int = 2):
-    """Searches Wikipedia and returns summary + URL"""
-    results = wikipedia.search(query)
-    if not results:
-        return "Sorry, I couldn't find anything on that topic.", None
-    page_title = results[0]
+def save_history():
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        for m in st.session_state.messages:
+            f.write(str(m) + "\n")
+
+def add_message(role, content, meta=None):
+    st.session_state.messages.append({
+        "role": role,
+        "content": content,
+        "time": datetime.datetime.now().strftime("%H:%M:%S"),
+        "meta": meta or {}
+    })
+    save_history()
+
+def wikipedia_lookup(query, sentences=2):
     try:
-        summary = wikipedia.summary(page_title, sentences=sentences, auto_suggest=False, redirect=True)
-        page = wikipedia.page(page_title, auto_suggest=False, redirect=True)
-        return summary, page.url
+        results = wikipedia.search(query)
+        if not results:
+            return "Sorry, I couldn't find anything.", None
+        summary = wikipedia.summary(results[0], sentences=sentences, auto_suggest=False)
+        url = wikipedia.page(results[0], auto_suggest=False).url
+        return summary, url
     except wikipedia.DisambiguationError as e:
-        options = e.options[:7]
-        opt_str = "Ambiguous query. Possible options:\n" + "\n".join(f"- {o}" for o in options)
-        return opt_str, None
-    except wikipedia.PageError:
-        return "Sorry, I couldn't find a page matching your query.", None
-    except Exception as ex:
-        return f"Something went wrong with Wikipedia: {ex}", None
+        opts = ", ".join(e.options[:5])
+        return f"Your query is ambiguous. Did you mean: {opts}?", None
+    except:
+        return "Error fetching from Wikipedia.", None
 
-def text_to_speech_bytes(text: str, lang: str = "en"):
+def text_to_speech(text, lang="en"):
     tts = gTTS(text=text, lang=lang)
-    mp3_fp = io.BytesIO()
-    tts.write_to_fp(mp3_fp)
-    mp3_fp.seek(0)
-    return mp3_fp
+    fp = io.BytesIO()
+    tts.write_to_fp(fp)
+    fp.seek(0)
+    return fp
+
+def handle_tools(query):
+    # Tool: Date/Time
+    if re.search(r"(time|date|day) now", query.lower()):
+        return datetime.datetime.now().strftime("Current date/time: %Y-%m-%d %H:%M:%S")
+
+    # Tool: Calculator
+    if re.match(r"^\d+(\s*[\+\-\*/]\s*\d+)+$", query):
+        try:
+            return f"Result: {eval(query)}"
+        except:
+            return "Invalid calculation."
+
+    return None  # no local tool used
 
 # -------------------
-# User input UI
+# Sidebar
 # -------------------
-st.markdown("### Chat")
-col1, col2 = st.columns([3, 1])
-with col1:
-    user_input = st.text_input("Ask me anything:", key="user_input_field")
-with col2:
-    if st.button("Send"):
-        pass  # handled below
+with st.sidebar:
+    st.header("Settings")
+    wiki_sentences = st.slider("Wikipedia sentences", 1, 8, 2)
+    voice_enabled = st.checkbox("Enable voice output", True)
+    voice_lang = st.selectbox("Voice language", ["en", "hi", "kn", "ta", "te", "ml"], 0)
+    if st.button("Clear Chat"):
+        st.session_state.messages = []
+        if os.path.exists(HISTORY_FILE):
+            os.remove(HISTORY_FILE)
+        st.experimental_rerun()
 
-if st.session_state.get("user_input_field"):
-    raw = st.session_state.user_input_field.strip()
-    if raw:
-        st.session_state.user_input_field = ""  # clear box
-        prompt_parts = [raw]
-        if upload_context:
-            prompt_parts.append("\n\nExtra context:\n" + upload_context[:5000])
-        prompt_text = "\n\n".join(prompt_parts)
+# -------------------
+# Chat UI
+# -------------------
+uploaded = st.file_uploader("Upload a text file for local search", type=["txt"])
+upload_text = ""
+if uploaded:
+    upload_text = uploaded.read().decode("utf-8")
 
-        add_message("user", raw)
+query = st.text_input("Type your message:")
 
-        # Get Wikipedia result
-        wiki_summary, wiki_url = get_wikipedia_summary(raw, sentences=wiki_sentences)
+if query:
+    add_message("user", query)
+    st.session_state["bot_typing"] = True
+    st.experimental_rerun()
 
-        # Persona effect: simple style tweak
-        if persona == "Friendly":
-            wiki_summary = f"Here's what I found 😊:\n\n{wiki_summary}"
-        elif persona == "Formal":
-            wiki_summary = f"According to Wikipedia:\n\n{wiki_summary}"
-        elif persona == "Concise":
-            wiki_summary = wiki_summary.strip().split(".")[0] + "."
+if st.session_state.get("bot_typing"):
+    last_query = st.session_state.messages[-1]["content"]
 
-        meta = {"wiki_url": wiki_url} if wiki_url else {}
-        add_message("bot", wiki_summary, meta=meta)
+    # Tool check first
+    tool_result = handle_tools(last_query)
+    if tool_result:
+        bot_reply = tool_result
+        wiki_url = None
+    else:
+        # File search
+        if upload_text and last_query.lower() in upload_text.lower():
+            bot_reply = "I found this in your file:\n" + "\n".join(
+                line for line in upload_text.splitlines() if last_query.lower() in line.lower()
+            )[:500]
+            wiki_url = None
+        else:
+            # Wikipedia
+            bot_reply, wiki_url = wikipedia_lookup(last_query, sentences=wiki_sentences)
+
+    add_message("bot", bot_reply, {"wiki_url": wiki_url})
+    st.session_state["bot_typing"] = False
+    st.experimental_rerun()
 
 # -------------------
 # Display conversation
 # -------------------
-st.markdown("---")
-for i, msg in enumerate(st.session_state.messages):
-    if msg["role"] == "user":
-        st.markdown(f"**You:** {msg['content']}")
-    else:
-        st.markdown(f"**Bot:** {msg['content']}")
-        if msg.get("meta", {}).get("wiki_url"):
-            st.markdown(f"[Read more on Wikipedia]({msg['meta']['wiki_url']})")
-        if voice_enabled:
-            if st.button("🔊 Play Voice", key=f"voice_{i}"):
-                try:
-                    audio_bytes = text_to_speech_bytes(msg["content"], lang=voice_lang)
-                    st.audio(audio_bytes, format="audio/mp3")
-                except Exception as e:
-                    st.error(f"Voice error: {e}")
-
-# -------------------
-# Transcript controls
-# -------------------
-st.markdown("---")
-if st.button("Download transcript"):
-    txt = ""
-    for m in st.session_state.messages:
-        prefix = "You:" if m["role"] == "user" else "Bot:"
-        txt += f"{prefix} {m['content']}\n\n"
-    st.download_button(
-        "Click to download",
-        data=txt,
-        file_name=f"chat_transcript_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+for msg in st.session_state.messages:
+    is_user = msg["role"] == "user"
+    avatar = USER_AVATAR if is_user else BOT_AVATAR
+    align = "right" if is_user else "left"
+    st.markdown(
+        f"<div style='text-align:{align}; border:1px solid #ccc; padding:8px; "
+        f"border-radius:10px; margin:5px; background-color:{'#e0f7fa' if is_user else '#f1f8e9'}'>"
+        f"<b>{avatar} [{msg['time']}]</b><br>{msg['content']}</div>",
+        unsafe_allow_html=True
     )
+    if not is_user and msg.get("meta", {}).get("wiki_url"):
+        st.markdown(f"[Read more here]({msg['meta']['wiki_url']})")
+    if not is_user and voice_enabled:
+        if st.button("🔊", key=f"voice_{msg['time']}"):
+            st.audio(text_to_speech(msg["content"], voice_lang), format="audio/mp3")
