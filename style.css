@@ -1,127 +1,68 @@
-import streamlit as st
-import wikipedia
-import math
+/* ----------- General Body Style ----------- */
+body {
+    background: linear-gradient(to right, #ffdde1, #ee9ca7);
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
 
-# ----------------- CONFIG -----------------
-st.set_page_config(page_title="🌸 Motte Chatbot", layout="wide")
+/* ----------- Chat Container ----------- */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 20px;
+}
 
-# Sidebar Navigation
-st.sidebar.title("🌸 Motte Menu")
-page = st.sidebar.radio("Go to:", ["Main App", "About Us", "How to Use", "Contact"])
+/* ----------- Buttons ----------- */
+.stButton>button {
+    background-color: #ff7f7f !important;
+    color: white !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    padding: 10px 20px !important;
+    border: none !important;
+    cursor: pointer;
+}
+.stButton>button:hover {
+    background-color: #ff4f4f !important;
+}
 
-# Inject CSS for styling
-st.markdown(
-    """
-    <style>
-    body {
-        background: linear-gradient(to right, #ffdde1, #ee9ca7);
-        font-family: 'Comic Sans MS', cursive, sans-serif;
+/* ----------- Text Input ----------- */
+.stTextInput>div>div>input {
+    border-radius: 8px !important;
+    border: 2px solid #ff7f7f !important;
+    padding: 8px !important;
+    font-size: 16px !important;
+}
+
+/* ----------- Petal Animation ----------- */
+.petal {
+    position: fixed;
+    top: -10px;
+    width: 25px;
+    height: auto;
+    pointer-events: none;
+    animation-name: fall;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(-10px) rotate(0deg);
+        opacity: 1;
     }
-    .stButton>button {
-        background-color: #ff7f7f;
-        color: white;
-        border-radius: 12px;
-        font-size: 16px;
-        padding: 10px 20px;
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0.5;
     }
-    .stTextInput>div>div>input {
-        border-radius: 8px;
-        border: 2px solid #ff7f7f;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+}
 
-# Add background music
-st.markdown(
-    """
-    <audio autoplay loop>
-        <source src="static/background.mp3" type="audio/mpeg">
-    </audio>
-    """,
-    unsafe_allow_html=True
-)
-
-# Petals animation
-st.markdown(
-    """
-    <script src="static/petals.js"></script>
-    """,
-    unsafe_allow_html=True
-)
-
-# ----------------- Pages -----------------
-if page == "Main App":
-    st.title("🌸 Welcome to Motte Chatbot")
-    
-    mode = st.radio(
-        "Select Motte's Mode:",
-        ["📚 Wikipedia", "🧮 Mathematics", "🩺 Health", "⚛️ Quantum Physics"],
-        horizontal=True
-    )
-
-    greetings = {
-        "📚 Wikipedia": "📚 Motte Encyclopedia at your service.",
-        "🧮 Mathematics": "🧮 Motte Calculator is ready for you.",
-        "🩺 Health": "🩺 Motte Doctor is here to help.",
-        "⚛️ Quantum Physics": "⚛️ Motte Quantum Lab activated."
-    }
-    st.markdown(f"**{greetings[mode]}**")
-
-    user_input = st.text_input("Your question:")
-
-    if st.button("Ask Motte"):
-        if mode == "📚 Wikipedia":
-            try:
-                summary = wikipedia.summary(user_input, sentences=3)
-                page_data = wikipedia.page(user_input)
-                st.write(summary)
-                if page_data.images:
-                    st.image(page_data.images[0], width=300)
-                st.markdown(f"[Read more on Wikipedia]({page_data.url})")
-            except:
-                st.error("Topic not found. Please try another.")
-
-        elif mode == "🧮 Mathematics":
-            try:
-                result = eval(user_input, {"__builtins__": None}, math.__dict__)
-                st.success(f"Result: {result}")
-            except:
-                st.error("Invalid math expression. Try again.")
-
-        elif mode == "🩺 Health":
-            health_db = {
-                "fever": "You may have an infection or flu. Rest, drink fluids, and consult a doctor if symptoms persist.",
-                "cold": "It might be a common cold. Drink warm liquids and rest well.",
-                "headache": "Possible causes: stress, dehydration, or eye strain. Drink water and rest.",
-                "stomach pain": "Might be indigestion. Avoid spicy food and drink warm water."
-            }
-            reply = None
-            for key in health_db:
-                if key in user_input.lower():
-                    reply = health_db[key]
-                    break
-            st.info(reply if reply else "I don't have info on that symptom. Please consult a doctor.")
-
-        elif mode == "⚛️ Quantum Physics":
-            quantum_facts = {
-                "superposition": "A particle can exist in multiple states at once until measured.",
-                "entanglement": "Particles can be connected so that one's state instantly affects the other.",
-                "quantum tunneling": "Particles can pass through barriers they normally couldn’t.",
-                "wave-particle duality": "Quantum entities can act like particles and waves."
-            }
-            reply = quantum_facts.get(user_input.lower(), "That's a deep topic! Let me know a specific quantum term.")
-            st.write(reply)
-
-elif page == "About Us":
-    st.title("🌸 About Motte")
-    st.write("Motte is your cute AI assistant that can fetch Wikipedia articles, solve math problems, give health tips, and explain quantum physics concepts!")
-
-elif page == "How to Use":
-    st.title("📜 How to Use")
-    st.write("1. Select a mode from the top.\n2. Type your question.\n3. Click **Ask Motte**.\n4. Enjoy the answers!")
-
-elif page == "Contact":
-    st.title("📩 Contact Us")
-    st.write("Email: mottebot@example.com\nTwitter: @MotteBot")
+/* ----------- Sidebar Styling ----------- */
+.sidebar .sidebar-content {
+    background-color: rgba(255, 240, 245, 0.9);
+    border-right: 2px solid #ff7f7f;
+}
