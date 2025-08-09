@@ -1,142 +1,96 @@
 import streamlit as st
 import wikipedia
-import requests
-from gtts import gTTS
-import io
-import re
-import base64
+import math
 
-# -------------------
-# PAGE CONFIG
-# -------------------
-st.set_page_config(page_title="Motte", page_icon="🌸", layout="wide")
+# ----------------- CONFIG -----------------
+st.set_page_config(page_title="🌸 Motte Chatbot", layout="centered")
 
-# -------------------
-# CUSTOM CSS + JS FOR SAKURA + BACKGROUND MUSIC
-# -------------------
-sakura_js = """
-<script src="https://cdn.jsdelivr.net/npm/sakura-js/dist/sakura.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var sakura = new Sakura('body');
-});
-</script>
-"""
+# Inject background music
+music_file = "background.mp3"
+petal_image = "petal.png"
 
-bg_music_html = """
-<audio autoplay loop>
-  <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Podington_Bear/Daydream/Podington_Bear_-_Daydream.mp3" type="audio/mpeg">
-</audio>
-"""
-
-st.markdown(sakura_js, unsafe_allow_html=True)
-st.markdown(bg_music_html, unsafe_allow_html=True)
-
-# -------------------
-# SIDEBAR - ABOUT US
-# -------------------
-with st.sidebar:
-    st.header("🌸 About Motte")
-    st.write("""
-    Motte is your friendly AI-powered chatbot that can answer anything —
-    from history to quantum physics, from math problems to health info.
-    Uses Wikipedia and WHO data for reliable answers.
-    """)
-    st.write("**Developer:** You 😎")
-    st.write("**Version:** 1.0")
-    st.markdown("---")
-    st.write("**Quick Topics:**")
-    if st.button("Mathematics"):
-        st.session_state.query = "Mathematics"
-    if st.button("Quantum Physics"):
-        st.session_state.query = "Quantum physics"
-    if st.button("Space Science"):
-        st.session_state.query = "Space science"
-    if st.button("Health"):
-        st.session_state.query = "Health"
-
-# -------------------
-# FUNCTIONS
-# -------------------
-def fetch_wikipedia_info(query):
-    try:
-        results = wikipedia.search(query)
-        if not results:
-            return None, None, None
-        page = wikipedia.page(results[0], auto_suggest=False)
-        summary = wikipedia.summary(results[0], sentences=3, auto_suggest=False)
-        image_url = page.images[0] if page.images else None
-        return summary, page.url, image_url
-    except Exception as e:
-        return f"Error: {e}", None, None
-
-def fetch_who_info(query):
-    try:
-        # Example: placeholder WHO API call (replace with actual endpoint if available)
-        # Here using a dummy WHO facts page as fallback
-        url = f"https://www.who.int/news-room/fact-sheets/detail/{query.replace(' ', '-')}"
-        r = requests.get(url)
-        if r.status_code == 200:
-            return f"WHO resource: {url}", url, None
-        return None, None, None
-    except:
-        return None, None, None
-
-def solve_math(expression):
-    try:
-        result = eval(expression)
-        return f"The result is {result}", None, None
-    except:
-        return None, None, None
-
-def speak_text(text):
-    tts = gTTS(text=text, lang="en")
-    mp3_fp = io.BytesIO()
-    tts.write_to_fp(mp3_fp)
-    mp3_fp.seek(0)
-    b64 = base64.b64encode(mp3_fp.read()).decode()
-    audio_html = f"""
-    <audio autoplay>
-    <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+st.markdown(
+    f"""
+    <audio autoplay loop>
+        <source src="{music_file}" type="audio/mpeg">
     </audio>
-    """
-    st.markdown(audio_html, unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-# -------------------
-# MAIN HEADER
-# -------------------
-st.markdown("<h1 style='text-align:center;'>🌸 Motte</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align:center;'>Ask anything to Motte</h3>", unsafe_allow_html=True)
+# Petal animation (CSS)
+st.markdown(
+    f"""
+    <style>
+    body {{
+        background-color: #ffe4e1;
+        background-image: url("{petal_image}");
+        background-repeat: repeat;
+        animation: fall 10s infinite;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-# -------------------
-# USER INPUT
-# -------------------
-if "query" not in st.session_state:
-    st.session_state.query = ""
+# ----------------- MODE SELECTION -----------------
+mode = st.radio(
+    "Select Motte's Mode:",
+    ["📚 Wikipedia", "🧮 Mathematics", "🩺 Health", "⚛️ Quantum Physics"],
+    horizontal=True
+)
 
-user_query = st.text_input("Type your question here:", value=st.session_state.query)
-if user_query:
-    st.session_state.query = ""
-    
-    # Decide source
-    if re.match(r"^[0-9\+\-\*/\.\s]+$", user_query):
-        answer, link, image = solve_math(user_query)
-    elif any(word in user_query.lower() for word in ["health", "disease", "covid", "virus"]):
-        answer, link, image = fetch_who_info(user_query)
-        if not answer:
-            answer, link, image = fetch_wikipedia_info(user_query)
-    else:
-        answer, link, image = fetch_wikipedia_info(user_query)
+# ----------------- GREETINGS -----------------
+greetings = {
+    "📚 Wikipedia": "📚 Motte Encyclopedia at your service.",
+    "🧮 Mathematics": "🧮 Motte Calculator is ready for you.",
+    "🩺 Health": "🩺 Motte Doctor is here to help.",
+    "⚛️ Quantum Physics": "⚛️ Motte Quantum Lab activated."
+}
+st.markdown(f"**{greetings[mode]}**")
 
-    # Show answer
-    if answer:
-        st.markdown(f"**Answer:** {answer}")
-        if link:
-            st.markdown(f"[Read More Here]({link})")
-        if image:
-            st.image(image, use_container_width=True)
-        
-        # Auto voice playback
-        speak_text(answer)
-    else:
-        st.warning("Sorry, I couldn't find an answer.")
+# ----------------- MAIN LOGIC -----------------
+user_input = st.text_input("Your question:")
+
+if st.button("Ask Motte"):
+    if mode == "📚 Wikipedia":
+        try:
+            summary = wikipedia.summary(user_input, sentences=3)
+            page = wikipedia.page(user_input)
+            st.write(summary)
+            if page.images:
+                st.image(page.images[0], width=300)
+            st.markdown(f"[Read more on Wikipedia]({page.url})")
+        except:
+            st.error("Topic not found. Please try another.")
+
+    elif mode == "🧮 Mathematics":
+        try:
+            result = eval(user_input, {"__builtins__": None}, math.__dict__)
+            st.success(f"Result: {result}")
+        except:
+            st.error("Invalid math expression. Try again.")
+
+    elif mode == "🩺 Health":
+        health_db = {
+            "fever": "You may have an infection or flu. Rest, drink fluids, and consult a doctor if symptoms persist.",
+            "cold": "It might be a common cold. Drink warm liquids and rest well.",
+            "headache": "Possible causes: stress, dehydration, or eye strain. Drink water and rest.",
+            "stomach pain": "Might be indigestion. Avoid spicy food and drink warm water."
+        }
+        reply = None
+        for key in health_db:
+            if key in user_input.lower():
+                reply = health_db[key]
+                break
+        st.info(reply if reply else "I don't have info on that symptom. Please consult a doctor.")
+
+    elif mode == "⚛️ Quantum Physics":
+        quantum_facts = {
+            "superposition": "A particle can exist in multiple states at once until measured.",
+            "entanglement": "Particles can be connected so that one's state instantly affects the other.",
+            "quantum tunneling": "Particles can pass through barriers they normally couldn’t.",
+            "wave-particle duality": "Quantum entities can act like particles and waves."
+        }
+        reply = quantum_facts.get(user_input.lower(), "That's a deep topic! Let me know a specific quantum term.")
+        st.write(reply)
