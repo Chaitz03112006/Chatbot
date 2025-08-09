@@ -1,1 +1,43 @@
+/* ====== Hide default Streamlit UI parts ====== */
+#MainMenu, header, footer {
+    visibility: hidden;
+}
+
+/* ====== Background Sakura Animation ====== */
+body {
+    background-color: #fef6f9;
+    overflow: hidden;
+}
+
+.petal {
+    position: fixed;
+    top: -10%;
+    width: 30px;
+    height: 30px;
+    background-image: url('petal.png');
+    background-size: cover;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(-10%) rotate(0deg);
+    }
+    100% {
+        transform: translateY(110vh) rotate(360deg);
+    }
+}
+
+/* ====== Chatbot Title Styling ====== */
+h1 {
+    font-family: 'Comic Sans MS', cursive;
+    color: #ff5c8a;
+    text-align: center;
+    text-shadow: 2px 2px #ffe6f0;
+}
+
+/* ====== Sidebar Styling ====== */
+.css-1d391kg {
+    background-color: #fff0f5;
+    border-right: 2px solid #ffb
 
