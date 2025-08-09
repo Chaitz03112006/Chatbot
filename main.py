@@ -6,49 +6,53 @@ import os
 # ----------------- CONFIG -----------------
 st.set_page_config(page_title="🌸 Motte Chatbot", layout="wide")
 
-# Sidebar: About Us
+# ----------------- SIDEBAR: ABOUT US -----------------
 st.sidebar.title("About Us")
 st.sidebar.write("""
-Welcome to **Motte Chatbot**!  
+Welcome to **Motte Chatbot**! 🌸  
 Your friendly multi-mode assistant that can:
 - 📚 Search Wikipedia
 - 🧮 Solve Math problems
 - 🩺 Give health tips
 - ⚛️ Explain quantum physics  
+
 No external AI APIs — just pure Python magic!
 """)
 
-# Main Title
+# ----------------- MAIN TITLE -----------------
 st.markdown("<h1 style='text-align: center;'>🌸 Motte Chatbot 🌸</h1>", unsafe_allow_html=True)
 
-# Asset paths
+# ----------------- STATIC FILES -----------------
+# Ensure 'static' folder exists with these files
 music_file = os.path.join("static", "background.mp3")
 petal_image = os.path.join("static", "petal.png")
 
-# Inject background music
-st.markdown(
-    f"""
-    <audio autoplay loop>
-        <source src="{music_file}" type="audio/mpeg">
-    </audio>
-    """,
-    unsafe_allow_html=True
-)
+# Background Music
+if os.path.exists(music_file):
+    st.markdown(
+        f"""
+        <audio autoplay loop>
+            <source src="{music_file}" type="audio/mpeg">
+        </audio>
+        """,
+        unsafe_allow_html=True
+    )
 
-# Petal animation
-st.markdown(
-    f"""
-    <style>
-    body {{
-        background-color: #ffe4e1;
-        background-image: url("{petal_image}");
-        background-repeat: repeat;
-        animation: fall 10s infinite;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# Petal Background
+if os.path.exists(petal_image):
+    st.markdown(
+        f"""
+        <style>
+        body {{
+            background-color: #ffe4e1;
+            background-image: url("{petal_image}");
+            background-repeat: repeat;
+            background-size: 50px;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
 # ----------------- MODE SELECTION -----------------
 mode = st.radio(
@@ -57,7 +61,7 @@ mode = st.radio(
     horizontal=True
 )
 
-# Greetings
+# Mode Greetings
 greetings = {
     "📚 Wikipedia": "📚 Motte Encyclopedia at your service.",
     "🧮 Mathematics": "🧮 Motte Calculator is ready for you.",
@@ -66,9 +70,10 @@ greetings = {
 }
 st.markdown(f"**{greetings[mode]}**")
 
-# ----------------- MAIN LOGIC -----------------
+# ----------------- MAIN INPUT -----------------
 user_input = st.text_input("Your question:")
 
+# ----------------- MAIN LOGIC -----------------
 if st.button("Ask Motte"):
     if mode == "📚 Wikipedia":
         try:
@@ -78,8 +83,8 @@ if st.button("Ask Motte"):
             if page.images:
                 st.image(page.images[0], width=300)
             st.markdown(f"[Read more on Wikipedia]({page.url})")
-        except:
-            st.error("Topic not found. Please try another.")
+        except Exception as e:
+            st.error("Topic not found or an error occurred. Try another.")
 
     elif mode == "🧮 Mathematics":
         try:
